@@ -1,13 +1,15 @@
 package site.tenqui.tpncm.ui
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.State
 import androidx.lifecycle.ViewModel
-import site.tenqui.tpncm.Interface.SongDataSource
 import site.tenqui.tpncm.data.SongRepository
 import site.tenqui.tpncm.model.Song
 
-class HomeViewModel(
-    private val dataSource: SongDataSource = SongRepository()
-) : ViewModel() {
+class HomeViewModel : ViewModel() {
 
-    val songs = dataSource.getSongs()
+    private val repository = SongRepository()
+
+    private val _songs = mutableStateOf<List<Song>>(repository.getSongs())
+    val songs: State<List<Song>> = _songs
 }
