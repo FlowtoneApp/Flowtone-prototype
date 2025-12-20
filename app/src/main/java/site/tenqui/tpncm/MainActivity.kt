@@ -7,14 +7,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.viewmodel.compose.viewModel
 import site.tenqui.tpncm.ui.HomeScreen
 import site.tenqui.tpncm.ui.HomeViewModel
+import site.tenqui.tpncm.ui.theme.MyMusicApplicationTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModel: HomeViewModel = viewModel()
-            HomeScreen(viewModel)
+            MyMusicApplicationTheme{
+                val viewModel: HomeViewModel = viewModel()
+                HomeScreen(viewModel)
+            }
         }
 
     }
