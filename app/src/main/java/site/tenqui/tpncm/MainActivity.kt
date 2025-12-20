@@ -7,7 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Person2
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -23,14 +29,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import site.tenqui.tpncm.ui.HomeViewModel
 
-enum class BottomTab(val title: String) {
-    HOME("推荐"),
-    SEARCH("搜索"),
-    PROFILE("我的")
+enum class BottomTab(
+    val title: String,
+    val icon: ImageVector
+) {
+    HOME("推荐", Icons.Filled.Home),
+    SEARCH("搜索", Icons.Filled.Search),
+    PROFILE("我的", Icons.Filled.Person)
 }
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,12 +79,18 @@ fun HomeScreen(viewModel: HomeViewModel) {
         },
         bottomBar = {
             NavigationBar {
-                BottomTab.values().forEach { tab ->
+                BottomTab.entries.forEach { tab ->
                     NavigationBarItem(
                         selected = currentTab == tab,
                         onClick = { currentTab = tab },
                         label = { Text(tab.title) },
-                        icon = {} // 先空着，下一步再加 icon
+                        alwaysShowLabel = true,
+                        icon = {
+                            Icon(
+                                imageVector = tab.icon,
+                                contentDescription = tab.title
+                            )
+                        }
                     )
                 }
             }
