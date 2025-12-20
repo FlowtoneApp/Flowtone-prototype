@@ -58,19 +58,12 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended")
-
-
-    // Compose BOM（统一版本管理）
     implementation(platform("androidx.compose:compose-bom:2024.05.00"))
-
-    // Compose 基础
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui-tooling-preview")
-
-    // Activity + Compose
     implementation("androidx.activity:activity-compose:1.9.0")
-
-    // ViewModel + Compose（你现在缺的）
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
 }
