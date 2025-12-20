@@ -1,19 +1,22 @@
 package site.tenqui.tpncm.ui.content
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import site.tenqui.tpncm.ui.HomeViewModel
+import site.tenqui.tpncm.ui.components.SongListItem
 
 @Composable
 fun HomeContent(
@@ -23,6 +26,7 @@ fun HomeContent(
     scope: CoroutineScope
 ) {
     val songs by viewModel.songs
+    var currentSongId by remember { mutableStateOf<Long?>(null) }
 
     LazyColumn(
         modifier = Modifier
@@ -30,17 +34,26 @@ fun HomeContent(
             .padding(16.dp)
     ) {
         items(songs){ song ->
-            Text(
-                text = "${song.name} - ${song.artist}",
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .clickable{
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = "正在播放: ${song.name} - ${song.artist}"
+            SongListItem(
+                song = song,
+                isPlaying = song.id == currentSongId,
+                onClick = {
+                    currentSongId = song.id
+
+                    scope.launch {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        snackbarHostState.showSnackbar(
+                            "正在播放：${song.name} - ${song.artist}",
+                            duration = SnackbarDuration.Short
                             )
-                        }
                     }
+                },
+                onMoreClick = {
+                    scope.launch {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        snackbarHostState.showSnackbar("更多: ${song.name}")
+                    }
+                }
             )
         }
     }
