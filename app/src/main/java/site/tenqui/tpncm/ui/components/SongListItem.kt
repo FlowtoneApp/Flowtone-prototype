@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
@@ -15,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import site.tenqui.tpncm.model.Song
 
@@ -37,9 +39,10 @@ fun SongListItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
             .clickable{ onClick() }
-            .padding(vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
@@ -47,6 +50,7 @@ fun SongListItem(
     Box(
     modifier = Modifier
         .size(56.dp)
+        .clip(RoundedCornerShape(12.dp))
         .background(
             color = MaterialTheme.colorScheme.surfaceVariant,
             shape = MaterialTheme.shapes.small
@@ -62,7 +66,7 @@ fun SongListItem(
 
         SongTextBlock(
             title = song.name,
-            subtitle = song.artist,
+            artist = song.artist,
             isPlaying = isPlaying,
             modifier = Modifier.weight(1f)
         )
