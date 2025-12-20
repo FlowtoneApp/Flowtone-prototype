@@ -1,7 +1,5 @@
 package site.tenqui.tpncm.ui
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -17,8 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import site.tenqui.tpncm.ui.content.HomeContent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,18 +23,11 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var currentTab by remember { mutableStateOf(BottomTab.HOME) }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        when (currentTab) {
-                            BottomTab.HOME -> "推荐"
-                            BottomTab.SEARCH -> "搜索"
-                            BottomTab.PROFILE -> "我的"
-                        }
-                    )
-                }
+                title = { Text(titleFor(currentTab)) }
             )
         },
         bottomBar = {
@@ -63,26 +52,28 @@ fun HomeScreen(viewModel: HomeViewModel) {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { padding ->
-
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-        ) {
             when (currentTab) {
                 BottomTab.HOME ->
                     HomeContent(
                         viewModel = viewModel,
+                        padding = padding,
                         snackbarHostState = snackbarHostState,
                         scope = scope
                     )
 
                 BottomTab.SEARCH ->
-                    Text("这里是搜索页面（未实现）")
+                    SearchScreen(padding = padding)
 
                 BottomTab.PROFILE ->
-                    Text("这里是我的页面（未实现）")
+                    ProfilesScreen(padding = padding)
             }
         }
+    }
+
+private fun titleFor(tab: BottomTab): String {
+    return when (tab) {
+        BottomTab.HOME -> "推荐"
+        BottomTab.SEARCH -> "搜索"
+        BottomTab.PROFILE -> "我的"
     }
 }
