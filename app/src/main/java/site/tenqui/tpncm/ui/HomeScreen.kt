@@ -16,13 +16,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import site.tenqui.tpncm.ui.content.HomeContent
+import site.tenqui.tpncm.ui.player.MiniPlayer
+import site.tenqui.tpncm.ui.player.PlayerManager
+import site.tenqui.tpncm.ui.player.PlayerScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
+fun HomeScreen(viewModel: HomeViewModel, playerManager: PlayerManager) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var currentTab by remember { mutableStateOf(BottomTab.HOME) }
+    var showPlayer by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -31,20 +35,34 @@ fun HomeScreen(viewModel: HomeViewModel) {
             )
         },
         bottomBar = {
-            NavigationBar {
-                BottomTab.entries.forEach { tab ->
-                    NavigationBarItem(
-                        selected = currentTab == tab,
-                        onClick = { currentTab = tab },
-                        label = { Text(tab.title) },
-                        alwaysShowLabel = true,
-                        icon = {
-                            Icon(
-                                imageVector = tab.icon,
-                                contentDescription = tab.title
-                            )
+            androidx.compose.foundation.layout.Column {
+                MiniPlayer(
+                    song = viewModel.currentSong.value,
+                    isPlaying = viewModel.isPlaying.value,
+                    onToggle = {
+                        viewModel.currentSong.value?.let { s ->
+                            playerManager.setNowPlayingInfo(s.name, s.artist)
                         }
-                    )
+                        playerManager.togglePlay(viewModel.currentSong.value?.path)
+                        viewModel.setPlaying(playerManager.isPlaying())
+                    },
+                    onOpenPlayer = { showPlayer = true }
+                )
+                NavigationBar {
+                    BottomTab.entries.forEach { tab ->
+                        NavigationBarItem(
+                            selected = currentTab == tab,
+                            onClick = { currentTab = tab },
+                            label = { Text(tab.title) },
+                            alwaysShowLabel = true,
+                            icon = {
+                                Icon(
+                                    imageVector = tab.icon,
+                                    contentDescription = tab.title
+                                )
+                            }
+                        )
+                    }
                 }
             }
         },
@@ -52,20 +70,35 @@ fun HomeScreen(viewModel: HomeViewModel) {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { padding ->
-            when (currentTab) {
-                BottomTab.HOME ->
-                    HomeContent(
-                        viewModel = viewModel,
-                        padding = padding,
-                        snackbarHostState = snackbarHostState,
-                        scope = scope
-                    )
-
-                BottomTab.SEARCH ->
-                    SearchScreen(padding = padding)
-
-                BottomTab.PROFILE ->
-                    ProfilesScreen(padding = padding)
+            if (showPlayer) {
+                PlayerScreen(
+                    song = viewModel.currentSong.value,
+                    isPlaying = viewModel.isPlaying.value,
+                    onToggle = {
+                        viewModel.currentSong.value?.let { s ->
+                            playerManager.setNowPlayingInfo(s.name, s.artist)
+                        }
+                        playerManager.togglePlay(viewModel.currentSong.value?.path)
+                        viewModel.setPlaying(playerManager.isPlaying())
+                    },
+                    onClose = { showPlayer = false },
+                    padding = padding
+                )
+            } else {
+                when (currentTab) {
+                    BottomTab.HOME ->
+                        HomeContent(
+                            viewModel = viewModel,
+                            padding = padding,
+                            snackbarHostState = snackbarHostState,
+                            scope = scope,
+                            playerManager = playerManager
+                        )
+                    BottomTab.SEARCH ->
+                        SearchScreen(padding = padding)
+                    BottomTab.PROFILE ->
+                        ProfilesScreen(viewModel = viewModel, padding = padding)
+                }
             }
         }
     }

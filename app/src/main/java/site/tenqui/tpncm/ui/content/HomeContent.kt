@@ -17,13 +17,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import site.tenqui.tpncm.ui.HomeViewModel
 import site.tenqui.tpncm.ui.components.SongListItem
+import site.tenqui.tpncm.ui.player.PlayerManager
 
 @Composable
 fun HomeContent(
     viewModel: HomeViewModel,
     padding: PaddingValues,
     snackbarHostState: SnackbarHostState,
-    scope: CoroutineScope
+    scope: CoroutineScope,
+    playerManager: PlayerManager
 ) {
     val songs by viewModel.songs
     var currentSongId by remember { mutableStateOf<Long?>(null) }
@@ -39,6 +41,12 @@ fun HomeContent(
                 isPlaying = song.id == currentSongId,
                 onClick = {
                     currentSongId = song.id
+                    viewModel.setCurrentSong(song)
+                    playerManager.setNowPlayingInfo(song.name, song.artist)
+                    if (song.path != null) {
+                        playerManager.playFile(song.path)
+                        viewModel.setPlaying(true)
+                    }
 
                     scope.launch {
                         snackbarHostState.currentSnackbarData?.dismiss()
