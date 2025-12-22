@@ -6,14 +6,29 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.media3.common.MediaItem
 import androidx.media3.common.AudioAttributes
 import androidx.media3.exoplayer.ExoPlayer
@@ -22,6 +37,16 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.ui.PlayerNotificationManager
 import site.tenqui.tpncm.R
 import site.tenqui.tpncm.model.Song
+import android.media.MediaMetadataRetriever
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 
 class PlayerManager(private val context: Context) {
 
@@ -141,7 +166,9 @@ fun MiniPlayer(
     song: Song?,
     isPlaying: Boolean,
     onToggle: () -> Unit,
-    onOpenPlayer: () -> Unit
+    onOpenPlayer: () -> Unit,
+    onInfoPositioned: (Offset) -> Unit,
+    showText: Boolean = true
 ) {
     Row(
         modifier = Modifier
@@ -149,7 +176,18 @@ fun MiniPlayer(
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Button(onClick = onOpenPlayer) { Text(if (song != null) "${song.name} - ${song.artist}" else "未选择歌曲") }
+        Button(onClick = onOpenPlayer) {
+            Box(modifier = Modifier.onGloballyPositioned { 
+                if (showText) onInfoPositioned(it.positionInRoot()) 
+            }) {
+                if (showText) {
+                    Text(if (song != null) "${song.name} - ${song.artist}" else "未选择歌曲")
+                } else {
+                    // Empty capsule text
+                    Text("")
+                }
+            }
+        }
         Button(onClick = onToggle) { Text(if (isPlaying) "暂停" else "播放") }
     }
 }
@@ -160,22 +198,95 @@ fun PlayerScreen(
     isPlaying: Boolean,
     onToggle: () -> Unit,
     onClose: () -> Unit,
-    padding: androidx.compose.foundation.layout.PaddingValues
+    padding: androidx.compose.foundation.layout.PaddingValues,
+    showInfo: Boolean,
+    onInfoPositioned: (Offset) -> Unit
 ) {
-    androidx.compose.foundation.layout.Column(
+    val context = LocalContext.current
+    val layoutDirection = LocalLayoutDirection.current
+    val cover = remember(song?.path) {
+        try {
+            if (song?.path != null) {
+                val mmr = MediaMetadataRetriever()
+                if (song.path.startsWith("content://")) {
+                    mmr.setDataSource(context, Uri.parse(song.path))
+                } else {
+                    mmr.setDataSource(song.path)
+                }
+                val bytes = mmr.embeddedPicture
+                mmr.release()
+                if (bytes != null) android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap() else null
+            } else null
+        } catch (e: Exception) { null }
+    }
+    val topPadding = padding.calculateTopPadding()
+    val startPadding = padding.calculateLeftPadding(layoutDirection)
+    val endPadding = padding.calculateRightPadding(layoutDirection)
+    
+    val artistStyle = MaterialTheme.typography.bodyMedium
+    val titleStyle = artistStyle.copy(
+        fontSize = artistStyle.fontSize * 1.5f,
+        fontWeight = FontWeight.Bold
+    )
+
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(padding)
-            .padding(24.dp),
-        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+            .fillMaxSize()
+            .padding(start = startPadding, top = topPadding, end = endPadding, bottom = 0.dp)
+            .padding(24.dp)
     ) {
-        androidx.compose.material3.Text(text = song?.name ?: "未选择歌曲")
-        androidx.compose.material3.Text(text = song?.artist ?: "")
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = onToggle) { Text(if (isPlaying) "暂停" else "播放") }
-            Button(onClick = onClose) { Text("返回") }
+        Column(
+            modifier = Modifier.align(Alignment.TopCenter),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (cover != null) {
+                Image(
+                    bitmap = cover,
+                    contentDescription = null,
+                    modifier = Modifier.size(240.dp).clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.MusicNote,
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = onToggle) { Text(if (isPlaying) "暂停" else "播放") }
+            }
+        }
+        
+        if (showInfo) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 24.dp, bottom = 24.dp)
+                    .onGloballyPositioned { onInfoPositioned(it.positionInRoot()) },
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = song?.name ?: "",
+                    style = titleStyle
+                )
+                Text(
+                    text = song?.artist ?: "",
+                    style = artistStyle
+                )
+            }
+        }
+        
+        IconButton(
+            onClick = onClose,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 24.dp, bottom = 24.dp)
+        ) {
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
         }
     }
 }
-
