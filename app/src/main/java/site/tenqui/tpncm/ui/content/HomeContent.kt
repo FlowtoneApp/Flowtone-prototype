@@ -3,7 +3,7 @@ package site.tenqui.tpncm.ui.content
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import site.tenqui.tpncm.ui.HomeViewModel
+import site.tenqui.tpncm.ui.components.GroupPosition
 import site.tenqui.tpncm.ui.components.SongListItem
 
 @Composable
@@ -33,9 +34,17 @@ fun HomeContent(
             .padding(padding)
             .padding(16.dp)
     ) {
-        items(songs){ song ->
+        itemsIndexed(songs) { index, song ->
+            val position = when{
+                songs.size == 1 -> GroupPosition.Single
+                index == 0 -> GroupPosition.Top
+                index == songs.lastIndex -> GroupPosition.Bottom
+                else -> GroupPosition.Middle
+            }
+
             SongListItem(
                 song = song,
+                position = position,
                 isPlaying = song.id == currentSongId,
                 onClick = {
                     currentSongId = song.id

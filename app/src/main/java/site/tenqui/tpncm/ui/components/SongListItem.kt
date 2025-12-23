@@ -24,9 +24,10 @@ import site.tenqui.tpncm.model.Song
 @Composable
 fun SongListItem(
     song: Song,
+    position: GroupPosition,
+    isPlaying: Boolean,
     onClick: () -> Unit,
     onMoreClick: () -> Unit,
-    isPlaying: Boolean,
     modifier: Modifier = Modifier
 ){
     val backgroundColor =
@@ -35,18 +36,22 @@ fun SongListItem(
         } else{
             Color.Transparent
         }
-    //歌曲信息层
+//        Row
+//      歌曲信息层
+//        Row
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(groupShape(position))
             .background(backgroundColor)
             .clickable{ onClick() }
             .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
-    //封面
+//        Box
+//        封面
+//        Box
     Box(
     modifier = Modifier
         .size(56.dp)
@@ -76,5 +81,29 @@ fun SongListItem(
                 contentDescription = "更多"
             )
         }
+    }
+}
+
+private fun groupShape(position: GroupPosition): RoundedCornerShape{
+val radius = 28.dp
+    return when (position) {
+        //单个形状为：
+        GroupPosition.Single ->
+            RoundedCornerShape(radius)
+
+        GroupPosition.Top ->
+            RoundedCornerShape(
+                topStart = radius,
+                topEnd = radius
+            )
+
+        GroupPosition.Middle ->
+            RoundedCornerShape(0.dp)
+
+        GroupPosition.Bottom ->
+            RoundedCornerShape(
+                bottomStart = radius,
+                bottomEnd = radius
+            )
     }
 }
