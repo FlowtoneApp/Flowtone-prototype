@@ -17,7 +17,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import site.tenqui.tpncm.model.Song
 
 
@@ -30,56 +29,70 @@ fun SongListItem(
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
+
+//        背景色
+//    backgroundColor
+//        背景色
     val backgroundColor =
         if (isPlaying){
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+            MaterialTheme.colorScheme.primaryContainer
         } else{
-            Color.Transparent
+            MaterialTheme.colorScheme.surfaceVariant
         }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = if (position != GroupPosition.Bottom) 4.dp else 0.dp)
+    )
+    {
+
 //        Row
 //      歌曲信息层
 //        Row
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(groupShape(position))
-            .background(backgroundColor)
-            .clickable{ onClick() }
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ){
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(groupShape(position))
+                .background(backgroundColor)
+                .clickable { onClick() }
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
 //        Box
 //        封面
 //        Box
-    Box(
-    modifier = Modifier
-        .size(56.dp)
-        .clip(RoundedCornerShape(12.dp))
-        .background(
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            shape = MaterialTheme.shapes.small
-        ),
-        contentAlignment = Alignment.Center
-    ){
-        Icon(
-            imageVector = Icons.Default.MusicNote,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-        )
-    }
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = MaterialTheme.shapes.small
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MusicNote,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                )
+            }
 
-        SongTextBlock(
-            title = song.name,
-            artist = song.artist,
-            isPlaying = isPlaying,
-            modifier = Modifier.weight(1f)
-        )
-        IconButton(onClick = onMoreClick) {
-            Icon(
-                imageVector = Icons.Filled.MoreVert,
-                contentDescription = "更多"
+            SongTextBlock(
+                title = song.name,
+                artist = song.artist,
+                isPlaying = isPlaying,
+                modifier = Modifier.weight(1f)
             )
+            IconButton(onClick = onMoreClick) {
+                Icon(
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = "更多"
+                )
+            }
         }
     }
 }
@@ -87,21 +100,27 @@ fun SongListItem(
 private fun groupShape(position: GroupPosition): RoundedCornerShape{
 val radius = 28.dp
     return when (position) {
-        //单个形状为：
+
+        //单个形状
         GroupPosition.Single ->
             RoundedCornerShape(radius)
 
+        //顶部形状
         GroupPosition.Top ->
             RoundedCornerShape(
                 topStart = radius,
-                topEnd = radius
+                topEnd = radius,
+                bottomStart = 4.dp,
+                bottomEnd = 4.dp
             )
-
+        //中间形状
         GroupPosition.Middle ->
-            RoundedCornerShape(0.dp)
-
+            RoundedCornerShape(4.dp)
+        //底部形状
         GroupPosition.Bottom ->
             RoundedCornerShape(
+                topStart = 4.dp,
+                topEnd = 4.dp,
                 bottomStart = radius,
                 bottomEnd = radius
             )
