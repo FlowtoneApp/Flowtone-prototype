@@ -4,19 +4,25 @@ import android.content.Context
 import androidx.media3.exoplayer.ExoPlayer
 import site.tenqui.tpncm.model.Song
 
-class PlayerManager(
-    context: Context
-) {
-    private val player = ExoPlayer.Builder(context).build()
+class PlayerManager{
 
-    fun play(song: Song){
-        TODO("播放功能")
-        player.play()
+    fun play(song: Song? = null){
+        if (song != null){
+            PlayerState.currentSong.value = song
+            PlayerState.hasTrack.value = true
+        }
+        PlayerState.isPlaying.value = true
     }
-
     fun pause(){
-        TODO("暂停功能")
-        player.pause()
+        PlayerState.isPlaying.value = false
     }
-    //TODO:播放状态多着呢
+    fun toggle() {
+        PlayerState.isPlaying.value = !PlayerState.isPlaying.value
+    }
+    fun next(){
+        //todo
+    }
+    fun previous(){
+        //todo
+    }
 }

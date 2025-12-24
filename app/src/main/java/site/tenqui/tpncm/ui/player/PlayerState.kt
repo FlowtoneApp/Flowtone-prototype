@@ -1,9 +1,20 @@
 package site.tenqui.tpncm.ui.player
 
+import androidx.compose.runtime.mutableStateOf
 import site.tenqui.tpncm.model.Song
 
-data class PlayerState(
-    val isPlaying: Boolean = false,
-    val currentSong: Song? = null
-    // TODO: 状态/队列/进度/播放模式
-)
+//全局播放状态
+object PlayerState{
+
+    //是否正在播放
+    val isPlaying = mutableStateOf(false)
+
+    //当前是否有歌曲
+    val hasTrack = mutableStateOf(true)
+
+    //是否有下一首
+    val hasNext = mutableStateOf(false)
+
+    //当前歌曲
+    val currentSong = mutableStateOf<Song?>(null)
+}
