@@ -1,5 +1,7 @@
 package site.tenqui.tpncm.ui.player
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -30,32 +33,58 @@ fun PlayerDock(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // 控制整体上下位置：收起时藏在 navbar 下方
-    val offsetY = if (expanded) 0.dp else 120.dp
+    // Dock 收起时的露出高度
+    val peekHeight = 56.dp
+
+    // 运行时测量 Dock 自己的高度
+    var dockHeightPx by remember { mutableStateOf(0) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val dockHeightDp = with(density) { dockHeightPx.toDp() }
+
+    // 收起时下移的高度：总高度 - 露出的高度
+    val hiddenOffset = (dockHeightDp - peekHeight).coerceAtLeast(0.dp)
+
+    val targetOffset = if (expanded) 0.dp else hiddenOffset
+
+    val animatedOffset by animateDpAsState(
+        targetValue = targetOffset,
+        animationSpec = tween(
+            durationMillis = 200,     // 动画时长
+            easing = androidx.compose.animation.core.FastOutSlowInEasing
+        ),
+        label = "dockOffset"
+    )
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .offset(y = offsetY)
+            .onGloballyPositioned { coordinates ->
+                dockHeightPx = coordinates.size.height
+            }
+            .offset(y = animatedOffset)
+            .pointerInput(Unit) {
+                detectVerticalDragGestures { _, dragAmount ->
+                    if (dragAmount < -20) expanded = true
+                    if (dragAmount > 20) expanded = false
+                }
+            }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.End
     ) {
+        // 小白条内容
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .pointerInput(Unit){
+                .pointerInput(Unit) {
                     detectVerticalDragGestures { _, dragAmount ->
-                        if (dragAmount < -20){
-                            expanded = true
-                        }
-                        if (dragAmount > 20) {
-                            expanded = false
-                        }
+                        if (dragAmount < -20) expanded = true
+                        if (dragAmount > 20) expanded = false
                     }
                 },
             contentAlignment = Alignment.CenterEnd
         ) {
+
             Box(
                 modifier = Modifier
                     .padding(end = 24.dp)
@@ -67,6 +96,7 @@ fun PlayerDock(
                     )
             )
         }
+
         // ===== 封面 =====
         Box(
             modifier = Modifier
@@ -77,10 +107,7 @@ fun PlayerDock(
                 .clickable { onCoverClick() },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.MusicNote,
-                contentDescription = null
-            )
+            Icon(imageVector = Icons.Default.MusicNote, contentDescription = null)
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -92,8 +119,7 @@ fun PlayerDock(
             shadowElevation = 3.dp
         ) {
             Row(
-                modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
